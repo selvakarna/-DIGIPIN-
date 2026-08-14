@@ -1,0 +1,11 @@
+{
+  "name": "bhoomi-ai-digipin",
+  "version": "1.0.0",
+  "description": "BhoomiAI — DIGIPIN Satellite AI Change Detection & Bhashini Voice Intelligence System",
+  "scripts": {
+    "start": "npx serve ."
+  },
+  "keywords": ["digipin", "isro", "sentinel-2", "satellite-ai", "change-detection", "bhashini", "tamil"],
+  "author": "EliKsha AI Labs",
+  "license": "MIT"
+}
