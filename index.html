@@ -248,6 +248,12 @@
       <span>🎁</span> <span id="lblCreditsCount">Free Searches: 3 / 3 Left</span>
     </div>
 
+    
+    <!-- Admin View Logs Button (Visible when Owner logs in) -->
+    <button id="btnAdminLogs" onclick="openAdminLogsModal()" style="display:none; background:#7c3aed; color:#fff; border:1px solid #a855f7; padding:5px 12px; border-radius:20px; font-size:11.5px; font-weight:bold; cursor:pointer;">
+      <span>📊</span> <span>User Logs (பயனர் பதிவுகள்)</span>
+    </button>
+
     <div class="bhashini-pill">
       <span>🌐</span> Powered by MeitY Bhashini
     </div>
@@ -569,6 +575,62 @@
         Activate 3-Month Plan (₹199)
       </button>
     </div>
+  </div>
+</div>
+
+
+<!-- ============================================================= -->
+<!-- MODAL: ADMIN USER ACTIVITY & GITHUB AUDIT LOG VIEWER -->
+<!-- ============================================================= -->
+<div class="modal-backdrop" id="adminLogsModal" style="position:fixed; inset:0; z-index:4000; background:rgba(7,11,20,0.94); backdrop-filter:blur(16px); display:none; align-items:center; justify-content:center; padding:20px;">
+  <div style="background:#0e1526; border:2px solid #a855f7; border-radius:18px; max-width:850px; width:100%; max-height:85vh; padding:24px; box-shadow:0 25px 60px rgba(0,0,0,0.9); display:flex; flex-direction:column; justify-content:space-between; position:relative;">
+    
+    <div>
+      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #1e293b; padding-bottom:12px; margin-bottom:14px;">
+        <div style="font-size:17px; font-weight:800; color:#fff; display:flex; align-items:center; gap:8px;">
+          <span>📊</span> <span>BhoomiAI Live User Activity & Mobile Audit Logs</span>
+        </div>
+        <button onclick="closeAdminLogsModal()" style="background:#1e293b; color:#fff; border:none; width:30px; height:30px; border-radius:50%; cursor:pointer; font-weight:bold;">✕</button>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; color:#cbd5e1; margin-bottom:12px;">
+        <div>Logging: <b>User Name, Mobile Number, Search Count, Timestamp, Place & DIGIPIN</b></div>
+        <span style="background:rgba(168,85,247,0.2); color:#c084fc; border:1px solid #a855f7; padding:3px 10px; border-radius:12px; font-weight:bold;">👑 OWNER ACCESS</span>
+      </div>
+
+      <!-- Logs Table -->
+      <div style="max-height:380px; overflow-y:auto; border:1px solid #1e293b; border-radius:8px;">
+        <table style="width:100%; border-collapse:collapse; font-size:11.5px; font-family:monospace;">
+          <thead>
+            <tr style="background:#18263a; color:#cbd5e1; position:sticky; top:0;">
+              <th style="padding:8px 10px; text-align:left;">Timestamp</th>
+              <th style="padding:8px 10px; text-align:left;">User Name</th>
+              <th style="padding:8px 10px; text-align:left;">Mobile Number</th>
+              <th style="padding:8px 10px; text-align:center;">Usage Count</th>
+              <th style="padding:8px 10px; text-align:left;">Searched DIGIPIN</th>
+              <th style="padding:8px 10px; text-align:left;">Location / Place</th>
+              <th style="padding:8px 10px; text-align:left;">Status</th>
+            </tr>
+          </thead>
+          <tbody id="adminLogsTableBody">
+            <!-- Dynamically Populated -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Export Actions -->
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:16px; border-top:1px solid #1e293b; padding-top:14px;">
+      <button onclick="clearAllLogs()" style="background:#ef4444; color:#fff; border:none; padding:7px 14px; border-radius:6px; font-size:11.5px; font-weight:bold; cursor:pointer;">
+        🗑️ Clear Logs
+      </button>
+      <div style="display:flex; gap:10px;">
+        <button onclick="downloadLogsCSV()" style="background:#10b981; color:#0f172a; border:none; padding:8px 18px; border-radius:6px; font-size:12px; font-weight:bold; cursor:pointer;">
+          📥 Download user_logs.csv
+        </button>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -1099,6 +1161,7 @@ function executeLocationAnalysis(data) {
 
     // Update Header
     document.getElementById('dispLocationName').innerText = `📍 ${data.cleanCode}: ${data.name || 'Adambai South, Pattukkottai'}`;
+    recordUserActivityLog(data.cleanCode, data.name || data.taluk);
     document.getElementById('dispTimeline').innerText = `Historical ${pYear} (Left) ⇄ Current ${cYear} (Right)`;
     document.getElementById('lblPastWin').innerText = `◀ REAL PAST SATELLITE: ${pYear}`;
     document.getElementById('lblCurrWin').innerText = `CURRENT: ${cYear} (AI) ▶`;
@@ -1293,5 +1356,5 @@ function setupMapClickDigipin() {
 }
 
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2b13f74582c7f16',t:'MTc4NjcyNDAxNw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2b157850cf32e35',t:'MTc4NjcyNTAwMw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
