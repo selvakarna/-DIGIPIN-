@@ -543,81 +543,78 @@ let showNDVI = false;
 let splitRatio = 0.5; // 50% slider
 
 function renderSatelliteViews() {
-  // --- RENDER TIME T1 (HISTORICAL SATELLITE - JAN 2026) ---
-  ctxT1.fillStyle = "#1e3a1e"; // Lush green farmland & open land
-  ctxT1.fillRect(0, 0, cT1.width, cT1.height);
+  // --- LOAD & RENDER REAL SATELLITE NATURE IMAGES (T1 vs T2) ---
+let imgT1 = new Image();
+let imgT2 = new Image();
+let isT1Loaded = false;
+let isT2Loaded = false;
 
-  // Farmland patches
-  ctxT1.fillStyle = "#166534";
-  ctxT1.fillRect(40, 40, 240, 180);
-  ctxT1.fillStyle = "#15803d";
-  ctxT1.fillRect(320, 50, 280, 160);
+imgT1.src = "satellite_nature_t1.jpg";
+imgT2.src = "satellite_nature_t2.jpg";
 
-  // Water lake on bottom left
-  ctxT1.fillStyle = "#0284c7";
-  ctxT1.beginPath(); ctxT1.ellipse(140, 320, 100, 60, -0.2, 0, Math.PI*2); ctxT1.fill();
+imgT1.onload = () => { isT1Loaded = true; renderSatelliteViews(); };
+imgT2.onload = () => { isT2Loaded = true; renderSatelliteViews(); };
 
-  // Small existing road
-  ctxT1.strokeStyle = "#94a3b8"; ctxT1.lineWidth = 6;
-  ctxT1.beginPath(); ctxT1.moveTo(0, 240); ctxT1.lineTo(650, 240); ctxT1.stroke();
+function renderSatelliteViews() {
+  // 1. RENDER TIME T1 (PAST SATELLITE - JAN 2026)
+  ctxT1.clearRect(0, 0, cT1.width, cT1.height);
+  if (isT1Loaded) {
+    ctxT1.drawImage(imgT1, 0, 0, cT1.width, cT1.height);
+  } else {
+    ctxT1.fillStyle = "#1e3a1e";
+    ctxT1.fillRect(0, 0, cT1.width, cT1.height);
+  }
 
   // Stamp Label T1
   ctxT1.fillStyle = "rgba(15, 23, 42, 0.85)";
-  ctxT1.fillRect(15, 15, 190, 24);
+  ctxT1.fillRect(15, 15, 210, 26);
   ctxT1.fillStyle = "#38bdf8";
   ctxT1.font = "bold 11px monospace";
-  ctxT1.fillText("🛰️ TIME T1: JAN 2026 (PAST)", 22, 31);
+  ctxT1.fillText("🛰️ TIME T1: JAN 2026 (PAST)", 22, 32);
 
 
-  // --- RENDER TIME T2 (CURRENT SATELLITE - AUG 2026 + AI DETECTIONS) ---
-  ctxT2.fillStyle = "#2d3748"; // Converted urban soil
-  ctxT2.fillRect(0, 0, cT2.width, cT2.height);
-
-  // Water lake on bottom left
-  ctxT2.fillStyle = "#0284c7";
-  ctxT2.beginPath(); ctxT2.ellipse(140, 320, 95, 58, -0.2, 0, Math.PI*2); ctxT2.fill();
-
-  // Road expanded
-  ctxT2.strokeStyle = "#475569"; ctxT2.lineWidth = 12;
-  ctxT2.beginPath(); ctxT2.moveTo(0, 240); ctxT2.lineTo(650, 240); ctxT2.stroke();
-
-  // New Concrete Buildings constructed
-  ctxT2.fillStyle = "#e2e8f0";
-  ctxT2.fillRect(80, 70, 90, 70); // Building 1
-  ctxT2.fillRect(200, 80, 80, 60); // Building 2
+  // 2. RENDER TIME T2 (CURRENT SATELLITE - AUG 2026)
+  ctxT2.clearRect(0, 0, cT2.width, cT2.height);
+  if (isT2Loaded) {
+    ctxT2.drawImage(imgT2, 0, 0, cT2.width, cT2.height);
+  } else {
+    ctxT2.fillStyle = "#2d3748";
+    ctxT2.fillRect(0, 0, cT2.width, cT2.height);
+  }
 
   // AI CHANGE DETECTION OVERLAYS
   if (showChanges) {
-    // Blue Highlight on New Buildings
+    // Blue Highlight on Building 1
     ctxT2.strokeStyle = "#38bdf8"; ctxT2.lineWidth = 3;
-    ctxT2.strokeRect(75, 65, 100, 80);
+    ctxT2.strokeRect(60, 50, 95, 75);
     ctxT2.fillStyle = "rgba(56, 189, 248, 0.35)";
-    ctxT2.fillRect(75, 65, 100, 80);
+    ctxT2.fillRect(60, 50, 95, 75);
     ctxT2.fillStyle = "#38bdf8"; ctxT2.font = "bold 10px sans-serif";
-    ctxT2.fillText("NEW BUILDING (+240 m²)", 80, 60);
+    ctxT2.fillText("NEW BUILDING (+240 m²)", 65, 45);
 
-    ctxT2.strokeRect(195, 75, 90, 70);
+    // Blue Highlight on Building 2
+    ctxT2.strokeRect(330, 70, 85, 65);
     ctxT2.fillStyle = "rgba(56, 189, 248, 0.35)";
-    ctxT2.fillRect(195, 75, 90, 70);
+    ctxT2.fillRect(330, 70, 85, 65);
     ctxT2.fillStyle = "#38bdf8";
-    ctxT2.fillText("NEW BUILDING (+210 m²)", 200, 70);
+    ctxT2.fillText("NEW BUILDING (+210 m²)", 335, 65);
 
-    // Red Highlight on Lost Vegetation (Deforestation / Harvest)
+    // Red Highlight on Harvested / Changed Farmland
     ctxT2.strokeStyle = "#ef4444"; ctxT2.lineWidth = 2.5; ctxT2.setLineDash([4, 4]);
-    ctxT2.strokeRect(320, 50, 280, 160);
+    ctxT2.strokeRect(120, 90, 160, 110);
     ctxT2.fillStyle = "rgba(239, 68, 68, 0.25)";
-    ctxT2.fillRect(320, 50, 280, 160);
+    ctxT2.fillRect(120, 90, 160, 110);
     ctxT2.setLineDash([]);
     ctxT2.fillStyle = "#ef4444"; ctxT2.font = "bold 10px sans-serif";
-    ctxT2.fillText("VEGETATION LOSS (-18.4% NDVI)", 330, 45);
+    ctxT2.fillText("VEGETATION LOSS (-18.4% NDVI)", 125, 85);
   }
 
   // Stamp Label T2
   ctxT2.fillStyle = "rgba(15, 23, 42, 0.85)";
-  ctxT2.fillRect(cT2.width - 230, 15, 215, 24);
+  ctxT2.fillRect(cT2.width - 240, 15, 225, 26);
   ctxT2.fillStyle = "#10b981";
   ctxT2.font = "bold 11px monospace";
-  ctxT2.fillText("🛰️ TIME T2: AUG 2026 (CURRENT)", cT2.width - 220, 31);
+  ctxT2.fillText("🛰️ TIME T2: AUG 2026 (CURRENT)", cT2.width - 230, 32);
 
   updateSplitSlider();
 }
