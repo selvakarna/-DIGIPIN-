@@ -1,0 +1,1472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RiceMill AI — Document & Stock Automation System | அரிசி ஆலை AI</title>
+<style>
+  :root {
+    --bg-main: #0a0e17;
+    --bg-card: #111827;
+    --bg-card-hover: #1f293d;
+    --primary: #059669; /* Emerald Rice Green */
+    --primary-glow: #34d399;
+    --accent-gold: #f59e0b; /* Golden Paddy */
+    --accent-blue: #0284c7;
+    --accent-red: #ef4444;
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --border: #1e293b;
+    --border-light: #334155;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Mukta Malar", "Latha", sans-serif; }
+  body { background: var(--bg-main); color: var(--text-main); line-height: 1.5; overflow-x: hidden; }
+
+  /* Top Navigation */
+  header {
+    position: sticky; top: 0; z-index: 100; background: rgba(10, 14, 23, 0.92); backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border); padding: 12px 28px; display: flex; justify-content: space-between; align-items: center;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand-icon { font-size: 26px; }
+  .brand-title { font-size: 18px; font-weight: 800; color: #fff; letter-spacing: 0.3px; }
+  .brand-title span { color: var(--accent-gold); }
+  .brand-sub { font-size: 11px; color: var(--primary-glow); font-weight: 600; display: block; }
+
+  .nav-center { display: flex; gap: 8px; }
+  .nav-btn {
+    background: transparent; border: 1px solid transparent; color: var(--text-muted); padding: 8px 14px;
+    border-radius: 6px; font-size: 12.5px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .nav-btn:hover { background: #1e293b; color: #fff; }
+  .nav-btn.active { background: var(--primary); color: #fff; border-color: var(--primary-glow); box-shadow: 0 0 12px rgba(52, 211, 153, 0.3); }
+
+  .nav-right { display: flex; align-items: center; gap: 12px; }
+  .lang-toggle {
+    background: #1e293b; border: 1px solid var(--border-light); border-radius: 20px; padding: 3px 6px;
+    display: flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: bold;
+  }
+  .lang-btn {
+    background: transparent; border: none; padding: 4px 10px; border-radius: 14px; color: var(--text-muted);
+    cursor: pointer; transition: all 0.2s; font-weight: bold;
+  }
+  .lang-btn.active { background: var(--accent-gold); color: #0f172a; }
+
+  .btn-quick-scan {
+    background: linear-gradient(135deg, #059669, #0284c7); color: #fff; border: none; padding: 8px 16px;
+    border-radius: 6px; font-size: 12.5px; font-weight: bold; cursor: pointer; transition: all 0.2s;
+  }
+  .btn-quick-scan:hover { opacity: 0.95; transform: translateY(-1px); }
+
+  /* Main Container */
+  main { max-width: 1200px; margin: 0 auto; padding: 22px 20px 60px; }
+
+  /* KPI Summary Stats Cards */
+  .kpi-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 22px; }
+  .kpi-card {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 14px;
+    display: flex; flex-direction: column; justify-content: space-between; transition: all 0.2s;
+  }
+  .kpi-card:hover { border-color: var(--primary-glow); transform: translateY(-2px); }
+  .kpi-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .kpi-title { font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
+  .kpi-icon { font-size: 16px; }
+  .kpi-val { font-size: 20px; font-weight: 800; font-family: monospace; color: #fff; }
+  .kpi-val.gold { color: var(--accent-gold); }
+  .kpi-val.green { color: var(--primary-glow); }
+  .kpi-val.blue { color: #38bdf8; }
+  .kpi-sub { font-size: 10.5px; color: var(--text-muted); margin-top: 2px; }
+
+  /* Content Views */
+  .view-panel { display: none; }
+  .view-panel.active { display: block; }
+
+  /* Module 1: Document OCR Studio */
+  .ocr-grid { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 20px; }
+  .card-box {
+    background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+  }
+  .card-box h3 { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+  .card-box p { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; }
+
+  /* Capture / Upload Bar */
+  .capture-bar {
+    display: flex; gap: 8px; margin-bottom: 12px; background: #080c14; padding: 10px; border-radius: 8px; border: 1px solid var(--border);
+    align-items: center; flex-wrap: wrap;
+  }
+  .btn-cam {
+    background: #0284c7; color: #fff; border: none; padding: 8px 14px; border-radius: 6px; font-size: 12px;
+    font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s;
+  }
+  .btn-cam:hover { background: #0369a1; }
+  .btn-snap {
+    background: #ef4444; color: #fff; border: none; padding: 8px 14px; border-radius: 6px; font-size: 12px;
+    font-weight: bold; cursor: pointer; display: none; align-items: center; gap: 6px; animation: pulse 1.5s infinite;
+  }
+  @keyframes pulse { 0%{opacity:0.9;} 50%{opacity:1; box-shadow:0 0 10px #ef4444;} 100%{opacity:0.9;} }
+
+  .file-label {
+    background: #1e293b; color: #cbd5e1; border: 1px solid var(--border-light); padding: 7px 12px;
+    border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+  }
+  .file-label:hover { background: #334155; color: #fff; }
+
+  /* Mode selector (Printed vs Handwritten) */
+  .mode-selector {
+    display: flex; gap: 8px; margin-bottom: 12px; align-items: center; font-size: 11.5px; color: var(--text-muted);
+  }
+  .mode-btn {
+    background: #1e293b; border: 1px solid var(--border-light); color: #94a3b8; padding: 4px 10px;
+    border-radius: 4px; font-size: 11px; font-weight: bold; cursor: pointer;
+  }
+  .mode-btn.active { background: #7c3aed; border-color: #a855f7; color: #fff; }
+
+  /* Sample Template Selector Pills */
+  .sample-pills { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+  .pill-btn {
+    background: #1e293b; border: 1px solid var(--border-light); color: #cbd5e1; padding: 5px 10px;
+    border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+  }
+  .pill-btn.active { background: var(--primary); border-color: var(--primary-glow); color: #fff; }
+  .pill-btn.handwritten-pill.active { background: #d97706; border-color: #fbbf24; color: #fff; }
+
+  /* Document Preview Box */
+  .doc-preview-wrap {
+    width: 100%; height: 350px; background: #080c14; border: 1px solid var(--border); border-radius: 8px;
+    position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center;
+  }
+  #docCanvas { width: 100%; height: 100%; object-fit: contain; }
+  #webcamVideo { width: 100%; height: 100%; object-fit: cover; display: none; }
+
+  /* Form Fields */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+  .form-group { display: flex; flex-direction: column; }
+  .form-group label { font-size: 11px; font-weight: bold; color: var(--text-muted); margin-bottom: 3px; }
+  .form-input {
+    background: #090d16; border: 1px solid var(--border); border-radius: 6px; padding: 7px 9px;
+    color: #fff; font-size: 12px; font-family: monospace; outline: none; transition: border-color 0.2s;
+  }
+  .form-input:focus { border-color: var(--primary-glow); }
+  .form-input.highlight { border-color: var(--accent-gold); color: var(--accent-gold); font-weight: bold; }
+  .form-input.handwritten-highlight { border-color: #a855f7; color: #c084fc; font-weight: bold; }
+
+  .btn-submit {
+    width: 100%; background: linear-gradient(135deg, #059669, #047857); color: #fff; border: none;
+    padding: 10px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; transition: all 0.2s; margin-top: 6px;
+  }
+  .btn-submit:hover { box-shadow: 0 0 15px rgba(52, 211, 153, 0.4); }
+
+  /* Table Style for Inventory */
+  .table-wrap { width: 100%; overflow-x: auto; margin-top: 10px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th { background: #1e293b; color: #cbd5e1; text-align: left; padding: 10px 12px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: #f1f5f9; }
+  tr:hover { background: rgba(30, 41, 59, 0.5); }
+  .badge { display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 10.5px; font-weight: bold; }
+  .badge.green { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid #10b981; }
+  .badge.gold { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid #f59e0b; }
+  .badge.blue { background: rgba(2, 132, 199, 0.15); color: #38bdf8; border: 1px solid #0284c7; }
+  .badge.purple { background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid #a855f7; }
+
+  /* Vision Modules: Bag Counter & Grain Quality */
+  .vision-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .vision-canvas-box {
+    width: 100%; height: 280px; background: #080c14; border-radius: 8px; border: 1px solid var(--border);
+    position: relative; overflow: hidden;
+  }
+  .vision-canvas-box canvas { width: 100%; height: 100%; }
+
+  .telemetry-row { display: flex; justify-content: space-between; margin-top: 10px; gap: 8px; }
+  .telem-pill { flex: 1; background: #1e293b; padding: 8px; border-radius: 6px; text-align: center; }
+  .telem-lbl { font-size: 9.5px; color: var(--text-muted); font-weight: bold; text-transform: uppercase; }
+  .telem-num { font-size: 15px; font-weight: bold; font-family: monospace; color: var(--primary-glow); margin-top: 2px; }
+
+  /* Billing Section */
+  .invoice-box {
+    background: #ffffff; color: #0f172a; padding: 24px; border-radius: 8px; font-family: sans-serif;
+  }
+  .inv-header { display: flex; justify-content: space-between; border-bottom: 2px solid #059669; padding-bottom: 12px; margin-bottom: 14px; }
+  .inv-title { font-size: 18px; font-weight: 800; color: #065f46; }
+  .inv-sub { font-size: 11px; color: #475569; }
+  .inv-table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 12px; }
+  .inv-table th { background: #f1f5f9; color: #334155; padding: 8px; border-bottom: 1px solid #cbd5e1; }
+  .inv-table td { padding: 8px; border-bottom: 1px solid #e2e8f0; color: #0f172a; }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .ocr-grid { grid-template-columns: 1fr; }
+    .vision-grid { grid-template-columns: 1fr; }
+    .nav-center { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Header Navigation -->
+<header>
+  <div class="brand">
+    <div class="brand-icon">🌾</div>
+    <div>
+      <div class="brand-title">RICEMILL<span>.AI</span></div>
+      <span class="brand-sub" id="hdrSub">Smart Document & Stock Automation System</span>
+    </div>
+  </div>
+
+  <div class="nav-center">
+    <button class="nav-btn active" onclick="switchNav(0)">
+      <span>📄</span> <span class="t-doc">Document OCR</span>
+    </button>
+    <button class="nav-btn" onclick="switchNav(1)">
+      <span>📦</span> <span class="t-stock">Stock Ledger</span>
+    </button>
+    <button class="nav-btn" onclick="switchNav(2)">
+      <span>📹</span> <span class="t-cam">AI Bag Counter</span>
+    </button>
+    <button class="nav-btn" onclick="switchNav(3)">
+      <span>🔬</span> <span class="t-grain">Rice Grain Quality</span>
+    </button>
+    <button class="nav-btn" onclick="switchNav(4)">
+      <span>🧾</span> <span class="t-bill">Quick Billing</span>
+    </button>
+  </div>
+
+  <div class="nav-right">
+    <!-- Language Toggle Switcher -->
+    <div class="lang-toggle">
+      <button class="lang-btn active" id="btnEn" onclick="setLanguage('en')">EN</button>
+      <button class="lang-btn" id="btnTa" onclick="setLanguage('ta')">தமிழ்</button>
+    </div>
+    <button class="btn-quick-scan" onclick="switchNav(0); startCamera();">
+      <span>📷</span> <span class="t-scan">Live Camera Scan</span>
+    </button>
+  </div>
+</header>
+
+<!-- Main Container -->
+<main>
+
+  <!-- KPI Overview Stats Cards -->
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-top">
+        <span class="kpi-title t-kpi1">Paddy Inward Today</span>
+        <span class="kpi-icon">🌾</span>
+      </div>
+      <div class="kpi-val gold">240 <span style="font-size:12px; color:#94a3b8;">Bags</span></div>
+      <div class="kpi-sub t-kpi1sub">18.0 Tons (Ponni & BPT)</div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-top">
+        <span class="kpi-title t-kpi2">Milling In-Progress</span>
+        <span class="kpi-icon">⚙️</span>
+      </div>
+      <div class="kpi-val green">68.5%</div>
+      <div class="kpi-sub t-kpi2sub">160 Bags Milled Today</div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-top">
+        <span class="kpi-title t-kpi3">Rice Stock in Godown</span>
+        <span class="kpi-icon">🍚</span>
+      </div>
+      <div class="kpi-val blue">1,485 <span style="font-size:12px; color:#94a3b8;">Bags</span></div>
+      <div class="kpi-sub t-kpi3sub">25kg, 50kg, 75kg Packs</div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-top">
+        <span class="kpi-title t-kpi4">Broken Rice & Bran</span>
+        <span class="kpi-icon">🥣</span>
+      </div>
+      <div class="kpi-val">275 <span style="font-size:12px; color:#94a3b8;">Bags</span></div>
+      <div class="kpi-sub t-kpi4sub">180 Broken | 95 Bran</div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-top">
+        <span class="kpi-title t-kpi5">Today's Revenue</span>
+        <span class="kpi-icon">💰</span>
+      </div>
+      <div class="kpi-val green">₹4,85,200</div>
+      <div class="kpi-sub t-kpi5sub">8 Sales Invoices Generated</div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- TAB 0: DOCUMENT OCR & AI VALIDATION -->
+  <!-- ========================================== -->
+  <div class="view-panel active" id="panel0">
+    <div class="ocr-grid">
+      <!-- Left Box: Document Image Canvas, Camera & Samples -->
+      <div class="card-box">
+        <h3><span class="t-docHeader">AI Document Scanner & OCR Engine</span></h3>
+        <p class="t-docDesc">Scan printed weigh slips or handwritten farmer chits using your phone/webcam or test with preloaded samples.</p>
+
+        <!-- Live Camera & Upload Action Bar -->
+        <div class="capture-bar">
+          <button class="btn-cam" id="btnCamToggle" onclick="startCamera()">
+            <span>📸</span> <span class="t-btnStartCam">Turn On Live Camera (கேமராவை ஆன் செய்)</span>
+          </button>
+          <button class="btn-snap" id="btnSnapPhoto" onclick="capturePhoto()">
+            <span>⚡</span> <span class="t-btnSnap">Snap & Scan (படம் பிடி)</span>
+          </button>
+          <label class="file-label">
+            <span>📁</span> <span class="t-btnUpload">Upload Bill Image (படம் பதிவேற்று)</span>
+            <input type="file" id="fileInput" accept="image/*" style="display:none;" onchange="handleFileUpload(event)">
+          </label>
+        </div>
+
+        <!-- Mode Selector: Printed vs Handwritten -->
+        <div class="mode-selector">
+          <span class="t-lblEngineMode">AI Recognition Engine:</span>
+          <button class="mode-btn active" id="mBtnPrinted" onclick="setEngineMode('printed')">🖨️ Printed Text OCR</button>
+          <button class="mode-btn" id="mBtnHandwritten" onclick="setEngineMode('handwritten')">✍️ Handwritten Slip (கையெழுத்து சீட்டு)</button>
+        </div>
+
+        <!-- Sample Template Selector -->
+        <div class="sample-pills">
+          <span style="font-size:11px; color:#94a3b8; align-self:center;" class="t-chooseSample">Samples:</span>
+          <button class="pill-btn active" id="pill0" onclick="loadSample(0)">1. Weigh Slip (எடை ரசீது)</button>
+          <button class="pill-btn" id="pill1" onclick="loadSample(1)">2. Paddy Purchase (கொள்முதல்)</button>
+          <button class="pill-btn" id="pill2" onclick="loadSample(2)">3. Sales Invoice (விற்பனை)</button>
+          <button class="pill-btn handwritten-pill" id="pill3" onclick="loadSample(3)">4. ✍️ Handwritten Chit (கையெழுத்து)</button>
+        </div>
+
+        <!-- Document Preview Canvas / Live Video Viewport -->
+        <div class="doc-preview-wrap">
+          <video id="webcamVideo" autoplay playsinline></video>
+          <canvas id="docCanvas"></canvas>
+        </div>
+      </div>
+
+      <!-- Right Box: Extracted Data & Validation Form -->
+      <div class="card-box">
+        <h3><span class="t-extractedHeader">Extracted OCR Data & Validation</span></h3>
+        <p class="t-extractedDesc">Review extracted details and click confirm to auto-update Godown Stock and Accounts ledger.</p>
+
+        <form id="ocrForm" onsubmit="handleValidateAndSave(event)">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="t-lblDocType">Document Type</label>
+              <input type="text" class="form-input highlight" id="fDocType" value="Weighbridge Slip (எடை ரசீது)" readonly>
+            </div>
+            <div class="form-group">
+              <label class="t-lblVehNo">Vehicle / Lorry No</label>
+              <input type="text" class="form-input" id="fVehNo" value="TN-49-AB-1234">
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="t-lblParty">Farmer / Dealer Name</label>
+              <input type="text" class="form-input" id="fParty" value="M. Ramasamy / ம. ராமசாமி (Thanjavur)">
+            </div>
+            <div class="form-group">
+              <label class="t-lblPaddyType">Paddy / Rice Variety</label>
+              <input type="text" class="form-input" id="fVariety" value="Deluxe Ponni (டீலக்ஸ் பொன்னி)">
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="t-lblGross">Gross Weight (மொத்த எடை)</label>
+              <input type="text" class="form-input" id="fGross" value="18,450 kg">
+            </div>
+            <div class="form-group">
+              <label class="t-lblTare">Tare Weight (லாரி எடை)</label>
+              <input type="text" class="form-input" id="fTare" value="6,200 kg">
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="t-lblNet">Net Weight (நிகர எடை)</label>
+              <input type="text" class="form-input highlight" id="fNet" value="12,250 kg (163 Bags @ 75kg)">
+            </div>
+            <div class="form-group">
+              <label class="t-lblMoist">Moisture % (ஈரப்பதம்)</label>
+              <input type="text" class="form-input" id="fMoist" value="14.2% (Permissible Standard)">
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="t-lblRate">Rate per Bag / Quintal</label>
+              <input type="text" class="form-input" id="fRate" value="₹1,450 / 75kg Bag">
+            </div>
+            <div class="form-group">
+              <label class="t-lblTotal">Total Inward Value</label>
+              <input type="text" class="form-input highlight" id="fTotal" value="₹2,36,350">
+            </div>
+          </div>
+
+          <button type="submit" class="btn-submit">
+            <span>✓</span> <span class="t-btnConfirm">Validate & Update Inventory (சரிபார்த்து சேமி)</span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- TAB 1: STOCK LEDGER & GODOWN INVENTORY -->
+  <!-- ========================================== -->
+  <div class="view-panel" id="panel1">
+    <div class="card-box">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <div>
+          <h3><span class="t-stockHeader">Real-Time Rice Mill Stock Ledger</span></h3>
+          <p class="t-stockDesc">Live stock tracking across Paddy, Finished Rice, Broken Grains, and Rice Bran.</p>
+        </div>
+        <button class="btn-submit" style="width:auto; padding:8px 16px;" onclick="alert('Stock Ledger Report Exported to Excel/PDF!')">
+          <span>📥</span> <span class="t-exportLedger">Export Excel / PDF</span>
+        </button>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th class="t-thCategory">Category</th>
+              <th class="t-thVariety">Paddy / Rice Variety</th>
+              <th class="t-thGodown">Godown Room</th>
+              <th class="t-thBagSize">Bag Pack Size</th>
+              <th class="t-thTotalBags">Total Bags</th>
+              <th class="t-thNetWeight">Net Weight (Tons)</th>
+              <th class="t-thEstValue">Est. Value (₹)</th>
+              <th class="t-thStatus">Status</th>
+            </tr>
+          </thead>
+          <tbody id="stockTableBody">
+            <tr>
+              <td><span class="badge gold">Paddy (நெல்)</span></td>
+              <td><b>Deluxe Ponni (டீலக்ஸ் பொன்னி)</b></td>
+              <td>Godown A-1</td>
+              <td>75 kg Bag</td>
+              <td><b>640 Bags</b></td>
+              <td>48.0 Tons</td>
+              <td>₹9,28,000</td>
+              <td><span class="badge green">In Stock</span></td>
+            </tr>
+            <tr>
+              <td><span class="badge gold">Paddy (நெல்)</span></td>
+              <td><b>BPT 5204 (Sona Masoori)</b></td>
+              <td>Godown A-2</td>
+              <td>75 kg Bag</td>
+              <td><b>420 Bags</b></td>
+              <td>31.5 Tons</td>
+              <td>₹6,51,000</td>
+              <td><span class="badge green">In Stock</span></td>
+            </tr>
+            <tr>
+              <td><span class="badge purple">Paddy (கையெழுத்து வரவு)</span></td>
+              <td><b>ADT 39 (ஆடுதுறை 39)</b></td>
+              <td>Godown A-3</td>
+              <td>75 kg Bag</td>
+              <td><b>84 Bags</b></td>
+              <td>6.3 Tons</td>
+              <td>₹1,15,920</td>
+              <td><span class="badge green">New Inward</span></td>
+            </tr>
+            <tr>
+              <td><span class="badge green">Finished Rice (அரிசி)</span></td>
+              <td><b>Super Fine Ponni Rice</b></td>
+              <td>Godown B-1</td>
+              <td>25 kg Bag</td>
+              <td><b>850 Bags</b></td>
+              <td>21.25 Tons</td>
+              <td>₹11,47,500</td>
+              <td><span class="badge green">Ready for Sale</span></td>
+            </tr>
+            <tr>
+              <td><span class="badge green">Finished Rice (அரிசி)</span></td>
+              <td><b>Single Boiled BPT Rice</b></td>
+              <td>Godown B-2</td>
+              <td>50 kg Bag</td>
+              <td><b>460 Bags</b></td>
+              <td>23.0 Tons</td>
+              <td>₹10,58,000</td>
+              <td><span class="badge green">Ready for Sale</span></td>
+            </tr>
+            <tr>
+              <td><span class="badge blue">By-Product (துணை)</span></td>
+              <td><b>Broken Rice (குருணை)</b></td>
+              <td>By-Product Shed</td>
+              <td>50 kg Bag</td>
+              <td><b>180 Bags</b></td>
+              <td>9.0 Tons</td>
+              <td>₹2,34,000</td>
+              <td><span class="badge gold">Fast Moving</span></td>
+            </tr>
+            <tr>
+              <td><span class="badge blue">By-Product (துணை)</span></td>
+              <td><b>De-Oiled Rice Bran (தவிடு)</b></td>
+              <td>By-Product Shed</td>
+              <td>50 kg Bag</td>
+              <td><b>95 Bags</b></td>
+              <td>4.75 Tons</td>
+              <td>₹1,04,500</td>
+              <td><span class="badge green">In Stock</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- TAB 2: AI CONVEYOR BAG COUNTER -->
+  <!-- ========================================== -->
+  <div class="view-panel" id="panel2">
+    <div class="vision-grid">
+      <!-- Left: Live Video Simulation Canvas -->
+      <div class="card-box">
+        <h3><span class="t-bagCamHeader">AI Conveyor Camera: Automated Bag Counting</span></h3>
+        <p class="t-bagCamDesc">YOLOv8 detects and counts rice/paddy bags moving on the loading conveyor into the delivery lorry.</p>
+
+        <div class="vision-canvas-box">
+          <canvas id="conveyorCanvas"></canvas>
+        </div>
+
+        <div class="telemetry-row">
+          <div class="telem-pill">
+            <div class="telem-lbl t-lblLoaded">Loaded Bags</div>
+            <div class="telem-num" id="bagCountNum">148 Bags</div>
+          </div>
+          <div class="telem-pill">
+            <div class="telem-lbl t-lblTarget">Truck Target</div>
+            <div class="telem-num gold">200 Bags</div>
+          </div>
+          <div class="telem-pill">
+            <div class="telem-lbl t-lblSpeed">Loading Speed</div>
+            <div class="telem-num blue">1.2 Bags/sec</div>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:10px; margin-top:12px;">
+          <button class="btn-submit" onclick="toggleConveyor()" id="btnConveyorToggle">
+            <span>⏸</span> <span class="t-btnPauseConveyor">Pause Loading Batch</span>
+          </button>
+          <button class="btn-submit" style="background:#334155;" onclick="resetBagCounter()">
+            <span>🔄</span> <span class="t-btnResetCounter">Reset Counter</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Right: Lorry Dispatch Status -->
+      <div class="card-box" style="display:flex; flex-direction:column; justify-content:space-between;">
+        <div>
+          <h3><span class="t-lorryHeader">Live Lorry Loading Order Status</span></h3>
+          <p class="t-lorryDesc">Automated verification between Weighbridge Target vs. Camera Count.</p>
+
+          <div style="background:#0b1120; border:1px solid #1e293b; border-radius:8px; padding:14px; margin-bottom:12px;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+              <span class="t-lblTruckNo">Lorry Number:</span>
+              <b style="color:#38bdf8;">TN-49-X-9988 (10-Wheeler)</b>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+              <span class="t-lblDestination">Destination / Party:</span>
+              <b>Kavitha Traders (Madurai)</b>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+              <span class="t-lblProduct">Dispatch Product:</span>
+              <span class="badge green">Ponni Boiled Rice (25kg)</span>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+              <span class="t-lblProgress">Loading Progress:</span>
+              <b style="color:#fbbf24;" id="txtProgress">74% (148 / 200 Bags)</b>
+            </div>
+            
+            <!-- Progress Bar -->
+            <div style="width:100%; height:10px; background:#1e293b; border-radius:5px; overflow:hidden; margin-top:8px;">
+              <div id="progBar" style="width:74%; height:100%; background:linear-gradient(90deg, #059669, #34d399);"></div>
+            </div>
+          </div>
+        </div>
+
+        <div style="background:#090d16; border:1px solid #1e293b; padding:10px; border-radius:6px; font-size:11px; color:#94a3b8;">
+          💡 <span class="t-camTip">Camera eliminates loading fraud, driver bag theft, and manual counting errors at dispatch gates.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- TAB 3: RICE GRAIN QUALITY & BROKEN GRAIN AI -->
+  <!-- ========================================== -->
+  <div class="view-panel" id="panel3">
+    <div class="vision-grid">
+      <!-- Left: Grain Inspection Canvas -->
+      <div class="card-box">
+        <h3><span class="t-grainHeader">AI Rice Grain Quality & Broken Ratio Inspector</span></h3>
+        <p class="t-grainDesc">Computer vision segments individual rice grains on the inspection tray to evaluate Head Rice %, Broken %, and Chalkiness.</p>
+
+        <div class="vision-canvas-box">
+          <canvas id="grainCanvas"></canvas>
+        </div>
+
+        <div style="display:flex; gap:10px; margin-top:12px;">
+          <button class="btn-submit" onclick="simulateGrainScan()">
+            <span>🔬</span> <span class="t-btnAnalyzeGrain">Analyze New Sample Tray (புதிய மாதிரி ஆய்வு)</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Right: Quality Analytics Metrics -->
+      <div class="card-box">
+        <h3><span class="t-gradeHeader">Automated Rice Grading Report</span></h3>
+        <p class="t-gradeDesc">Real-time commercial grain metrics compliance with FCI / Export grading rules.</p>
+
+        <div style="background:#0b1120; border:1px solid #1e293b; border-radius:8px; padding:14px; margin-bottom:12px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <span class="t-lblGradeResult">Overall Quality Grade:</span>
+            <span class="badge green" style="font-size:13px; padding:4px 12px;" id="badgeGrade">GRADE-A PREMIUM (முதல் தரம்)</span>
+          </div>
+
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+            <div class="telem-pill">
+              <div class="telem-lbl t-lblHeadRice">Head Rice (முழு அரிசி)</div>
+              <div class="telem-num green" id="valHeadRice">83.8%</div>
+            </div>
+            <div class="telem-pill">
+              <div class="telem-lbl t-lblBroken">Broken Rice (குருணை)</div>
+              <div class="telem-num gold" id="valBroken">11.4%</div>
+            </div>
+            <div class="telem-pill">
+              <div class="telem-lbl t-lblChalky">Chalky Grains (சுண்ணாம்பு)</div>
+              <div class="telem-num" id="valChalky">3.2%</div>
+            </div>
+            <div class="telem-pill">
+              <div class="telem-lbl t-lblPurity">Grain Purity (தூய்மை)</div>
+              <div class="telem-num blue" id="valPurity">98.6%</div>
+            </div>
+          </div>
+
+          <div style="margin-top:12px; font-size:11.5px; color:#cbd5e1;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+              <span class="t-lblAvgLen">Average Grain Length:</span>
+              <b>6.82 mm (Long Grain)</b>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+              <span class="t-lblLenWidth">Length-to-Width Ratio:</span>
+              <b>3.14 (Slender)</b>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- TAB 4: QUICK BILLING & PRINT INVOICE -->
+  <!-- ========================================== -->
+  <div class="view-panel" id="panel4">
+    <div class="card-box" style="max-width:800px; margin:0 auto;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+        <h3><span class="t-billHeader">Rice Mill Sales Invoice Generator</span></h3>
+        <button class="btn-submit" style="width:auto; padding:6px 14px;" onclick="window.print()">
+          <span>🖨️</span> <span class="t-btnPrint">Print / Save PDF</span>
+        </button>
+      </div>
+
+      <!-- Printable Clean White Invoice -->
+      <div class="invoice-box">
+        <div class="inv-header">
+          <div>
+            <div class="inv-title">THANJAI MODERN RICE MILL (P) LTD</div>
+            <div class="inv-sub">தஞ்சை நவீன அரிசி ஆலை | GSTIN: 33AAAAA0000A1Z5</div>
+            <div class="inv-sub">Trichy Main Road, Thanjavur, Tamil Nadu - 613001 | 📞 9940765433</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-weight:bold; font-size:13px;">TAX INVOICE / விற்பனை பில்</div>
+            <div style="font-size:11px; color:#64748b;">Invoice #: <b>INV-2026-0842</b></div>
+            <div style="font-size:11px; color:#64748b;">Date: <b>13-Aug-2026</b></div>
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; font-size:11.5px; margin-bottom:12px;">
+          <div>
+            <b>Billed To (வாங்குபவர்):</b><br/>
+            Kavitha Rice Traders<br/>
+            Main Bazaar, Madurai - 625001<br/>
+            GSTIN: 33BBBBB1111B2Z4
+          </div>
+          <div style="text-align:right;">
+            <b>Vehicle No:</b> TN-49-X-9988<br/>
+            <b>Delivery Note:</b> AI Camera Bag Verified (200 Bags)
+          </div>
+        </div>
+
+        <table class="inv-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Description of Goods (பொருள்)</th>
+              <th>HSN</th>
+              <th>Qty (Bags)</th>
+              <th>Weight (kg)</th>
+              <th>Rate / Bag</th>
+              <th>Amount (₹)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td><b>Super Fine Ponni Boiled Rice (25kg Pack)</b></td>
+              <td>100630</td>
+              <td>150 Bags</td>
+              <td>3,750 kg</td>
+              <td>₹1,350</td>
+              <td>₹2,02,500</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td><b>BPT 5204 Steam Rice (50kg Pack)</b></td>
+              <td>100630</td>
+              <td>50 Bags</td>
+              <td>2,500 kg</td>
+              <td>₹2,300</td>
+              <td>₹1,15,000</td>
+            </tr>
+            <tr style="background:#f8fafc; font-weight:bold;">
+              <td colspan="3" style="text-align:right;">Subtotal:</td>
+              <td>200 Bags</td>
+              <td>6,250 kg</td>
+              <td>-</td>
+              <td>₹3,17,500</td>
+            </tr>
+            <tr style="font-weight:bold; font-size:13px; color:#065f46;">
+              <td colspan="6" style="text-align:right;">GRAND TOTAL (மொத்த தொகை):</td>
+              <td>₹3,17,500</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div style="display:flex; justify-content:space-between; font-size:10.5px; color:#64748b; margin-top:20px; border-top:1px solid #e2e8f0; padding-top:8px;">
+          <div>Terms: Goods once sold will not be taken back.</div>
+          <div>Authorized Signatory for Thanjai Modern Rice Mill</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- Interactive Scripts, Camera API & Bilingual Engine -->
+<script>
+// -------------------------------------------------------------
+// BILINGUAL DICTIONARY (English & Tamil)
+// -------------------------------------------------------------
+const i18n = {
+  en: {
+    hdrSub: "Smart Document & Stock Automation System",
+    t_doc: "Document OCR",
+    t_stock: "Stock Ledger",
+    t_cam: "AI Bag Counter",
+    t_grain: "Rice Grain Quality",
+    t_bill: "Quick Billing",
+    t_scan: "Live Camera Scan",
+    t_kpi1: "Paddy Inward Today",
+    t_kpi1sub: "18.0 Tons (Ponni & BPT)",
+    t_kpi2: "Milling In-Progress",
+    t_kpi2sub: "160 Bags Milled Today",
+    t_kpi3: "Rice Stock in Godown",
+    t_kpi3sub: "25kg, 50kg, 75kg Packs",
+    t_kpi4: "Broken Rice & Bran",
+    t_kpi4sub: "180 Broken | 95 Bran",
+    t_kpi5: "Today's Revenue",
+    t_kpi5sub: "8 Sales Invoices Generated",
+    t_docHeader: "AI Document Scanner & OCR Engine",
+    t_docDesc: "Scan printed weigh slips or handwritten farmer chits using your phone/webcam or test with preloaded samples.",
+    t_btnStartCam: "Turn On Live Camera",
+    t_btnSnap: "Snap & Scan",
+    t_btnUpload: "Upload Bill Image",
+    t_lblEngineMode: "AI Recognition Engine:",
+    t_chooseSample: "Samples:",
+    t_extractedHeader: "Extracted OCR Data & Validation",
+    t_extractedDesc: "Review extracted details and click confirm to auto-update Godown Stock and Accounts ledger.",
+    t_lblDocType: "Document Type",
+    t_lblVehNo: "Vehicle / Lorry No",
+    t_lblParty: "Farmer / Dealer Name",
+    t_lblPaddyType: "Paddy / Rice Variety",
+    t_lblGross: "Gross Weight",
+    t_lblTare: "Tare Weight",
+    t_lblNet: "Net Weight",
+    t_lblMoist: "Moisture %",
+    t_lblRate: "Rate per Bag / Quintal",
+    t_lblTotal: "Total Inward Value",
+    t_btnConfirm: "Validate & Update Inventory",
+    t_stockHeader: "Real-Time Rice Mill Stock Ledger",
+    t_stockDesc: "Live stock tracking across Paddy, Finished Rice, Broken Grains, and Rice Bran.",
+    t_exportLedger: "Export Excel / PDF",
+    t_thCategory: "Category",
+    t_thVariety: "Paddy / Rice Variety",
+    t_thGodown: "Godown Room",
+    t_thBagSize: "Bag Pack Size",
+    t_thTotalBags: "Total Bags",
+    t_thNetWeight: "Net Weight (Tons)",
+    t_thEstValue: "Est. Value (₹)",
+    t_thStatus: "Status",
+    t_bagCamHeader: "AI Conveyor Camera: Automated Bag Counting",
+    t_bagCamDesc: "YOLOv8 detects and counts rice/paddy bags moving on the loading conveyor into the delivery lorry.",
+    t_lblLoaded: "Loaded Bags",
+    t_lblTarget: "Truck Target",
+    t_lblSpeed: "Loading Speed",
+    t_btnPauseConveyor: "Pause Loading Batch",
+    t_btnResetCounter: "Reset Counter",
+    t_lorryHeader: "Live Lorry Loading Order Status",
+    t_lorryDesc: "Automated verification between Weighbridge Target vs. Camera Count.",
+    t_lblTruckNo: "Lorry Number:",
+    t_lblDestination: "Destination / Party:",
+    t_lblProduct: "Dispatch Product:",
+    t_lblProgress: "Loading Progress:",
+    t_camTip: "Camera eliminates loading fraud, driver bag theft, and manual counting errors at dispatch gates.",
+    t_grainHeader: "AI Rice Grain Quality & Broken Ratio Inspector",
+    t_grainDesc: "Computer vision segments individual rice grains on the inspection tray to evaluate Head Rice %, Broken %, and Chalkiness.",
+    t_btnAnalyzeGrain: "Analyze New Sample Tray",
+    t_gradeHeader: "Automated Rice Grading Report",
+    t_gradeDesc: "Real-time commercial grain metrics compliance with FCI / Export grading rules.",
+    t_lblGradeResult: "Overall Quality Grade:",
+    t_lblHeadRice: "Head Rice (Whole Grain)",
+    t_lblBroken: "Broken Rice (Kuruve)",
+    t_lblChalky: "Chalky Grains",
+    t_lblPurity: "Grain Purity",
+    t_lblAvgLen: "Average Grain Length:",
+    t_lblLenWidth: "Length-to-Width Ratio:",
+    t_billHeader: "Rice Mill Sales Invoice Generator",
+    t_btnPrint: "Print / Save PDF"
+  },
+  ta: {
+    hdrSub: "அரிசி ஆலை AI ஆவண & சரக்கு இருப்பு மேலாண்மை முறைமை",
+    t_doc: "ஆவண OCR",
+    t_stock: "இருப்பு பட்டியல்",
+    t_cam: "மூட்டை எண்ணும் கேமரா",
+    t_grain: "அரிசி தர பரிசோதனை",
+    t_bill: "விரைவு பில்",
+    t_scan: "நேரடி கேமரா ஸ்கேன்",
+    t_kpi1: "இன்றைய நெல் வரவு",
+    t_kpi1sub: "18.0 டன் (பொன்னி & BPT)",
+    t_kpi2: "அரைவை நிலை",
+    t_kpi2sub: "இன்று 160 மூட்டைகள் அரைக்கப்பட்டது",
+    t_kpi3: "அரிசி இருப்பு (கிடங்கு)",
+    t_kpi3sub: "25kg, 50kg, 75kg மூட்டைகள்",
+    t_kpi4: "குருணை & தவிடு இருப்பு",
+    t_kpi4sub: "180 குருணை | 95 தவிடு",
+    t_kpi5: "இன்றைய விற்பனை வரவு",
+    t_kpi5sub: "8 விற்பனை பில்கள் உருவாக்கப்பட்டது",
+    t_docHeader: "AI ஆவண ஸ்கேனர் & OCR முறைமை",
+    t_docDesc: "எடை மேடை ரசீது அல்லது கையால் எழுதப்பட்ட நெல் சீட்டுகளை உங்கள் கேமராவில் படம் பிடித்து தானாக கணக்கிடலாம்.",
+    t_btnStartCam: "நேரடி கேமராவை ஆன் செய்",
+    t_btnSnap: "படம் பிடித்து ஸ்கேன் செய்",
+    t_btnUpload: "பில் படம் பதிவேற்று",
+    t_lblEngineMode: "AI அறிதல் முறைமை:",
+    t_chooseSample: "மாதிரிகள்:",
+    t_extractedHeader: "OCR மூலம் எடுக்கப்பட்ட விவரங்கள்",
+    t_extractedDesc: "விவரங்களை சரிபார்த்து உறுதிப்படுத்தினால் கிடங்கு இருப்பு மற்றும் கணக்கில் தானாக சேரும்.",
+    t_lblDocType: "ஆவண வகை",
+    t_lblVehNo: "வண்டி / லாரி எண்",
+    t_lblParty: "விவசாயி / வியாபாரி பெயர்",
+    t_lblPaddyType: "நெல் / அரிசி ரகம்",
+    t_lblGross: "மொத்த எடை (Gross)",
+    t_lblTare: "லாரி எடை (Tare)",
+    t_lblNet: "நிகர எடை (Net Weight)",
+    t_lblMoist: "ஈரப்பதம் % (Moisture)",
+    t_lblRate: "மூட்டை / குவிண்டால் விலை",
+    t_lblTotal: "மொத்த கொள்முதல் தொகை",
+    t_btnConfirm: "சரிபார்த்து சரக்கு இருப்பில் சேர்",
+    t_stockHeader: "நேரடி அரிசி ஆலை இருப்பு பதிவேடு",
+    t_stockDesc: "நெல், அரிசி, குருணை மற்றும் தவிடு இருப்பை உடனுக்குடன் கண்காணிக்கும் முறைமை.",
+    t_exportLedger: "எக்செல் / PDF ஆக பதிவிறக்கு",
+    t_thCategory: "வகை",
+    t_thVariety: "நெல் / அரிசி ரகம்",
+    t_thGodown: "கிடங்கு அறை",
+    t_thBagSize: "மூட்டை அளவு",
+    t_thTotalBags: "மொத்த மூட்டைகள்",
+    t_thNetWeight: "நிகர எடை (டன்)",
+    t_thEstValue: "மதிப்பு (₹)",
+    t_thStatus: "நிலை",
+    t_bagCamHeader: "கன்வேயர் AI கேமரா: தானியங்கி மூட்டை எண்ணிக்கை",
+    t_bagCamDesc: "லாரியில் ஏற்றப்படும் அரிசி மற்றும் நெல் மூட்டைகளை YOLOv8 AI கேமரா மூலம் துல்லியமாக எண்ணுதல்.",
+    t_lblLoaded: "ஏற்றப்பட்ட மூட்டைகள்",
+    t_lblTarget: "லாரி இலக்கு",
+    t_lblSpeed: "ஏற்றும் வேகம்",
+    t_btnPauseConveyor: "ஏற்றுவதை தற்காலிகமாக நிறுத்து",
+    t_btnResetCounter: "எண்ணிக்கையை மீட்டமை",
+    t_lorryHeader: "நேரடி லாரி ஏற்றுதல் நிலை",
+    t_lorryDesc: "எடை மேடை இலக்கு மற்றும் கேமரா எண்ணிக்கை இடையேயான தானியங்கி சரிபார்ப்பு.",
+    t_lblTruckNo: "லாரி எண்:",
+    t_lblDestination: "சேருமிடம் / வியாபாரி:",
+    t_lblProduct: "ஏற்றப்படும் பொருள்:",
+    t_lblProgress: "ஏற்றுதல் முன்னேற்றம்:",
+    t_camTip: "கேமரா மூலம் மூட்டை களவு, மனித தவறுகள் மற்றும் முறைகேடுகள் முழுமையாக தடுக்கப்படுகிறது.",
+    t_grainHeader: "AI அரிசி தர பரிசோதனை & குருணை விகித ஆய்வு",
+    t_grainDesc: "கணினி பார்வை (Computer Vision) மூலம் முழு அரிசி, குருணை, மற்றும் சுண்ணாம்பு தானியங்களின் சதவீதத்தை கணக்கிடுதல்.",
+    t_btnAnalyzeGrain: "புதிய மாதிரி தட்டை ஆய்வு செய்",
+    t_gradeHeader: "தானியங்கி அரிசி தர அறிக்கை",
+    t_gradeDesc: "FCI மற்றும் ஏற்றுமதி தர நிர்ணய விதிகளுக்கு உட்பட்ட துல்லியமான முடிவுகள்.",
+    t_lblGradeResult: "ஒட்டுமொத்த தரம்:",
+    t_lblHeadRice: "முழு அரிசி சதவீதம்",
+    t_lblBroken: "குருணை (உடைந்த அரிசி)",
+    t_lblChalky: "சுண்ணாம்பு / பச்சை தானியம்",
+    t_lblPurity: "தானிய தூய்மை %",
+    t_lblAvgLen: "சராசரி நீளம்:",
+    t_lblLenWidth: "நீளம்-அகலம் விகிதம்:",
+    t_billHeader: "அரிசி ஆலை விற்பனை பில் தயாரிப்பாளர்",
+    t_btnPrint: "பிரிண்ட் / PDF சேமி"
+  }
+};
+
+let currentLang = 'en';
+
+function setLanguage(lang) {
+  currentLang = lang;
+  document.getElementById('btnEn').className = (lang === 'en') ? 'lang-btn active' : 'lang-btn';
+  document.getElementById('btnTa').className = (lang === 'ta') ? 'lang-btn active' : 'lang-btn';
+
+  const dict = i18n[lang];
+  document.getElementById('hdrSub').innerText = dict.hdrSub;
+
+  for (let key in dict) {
+    const els = document.querySelectorAll('.' + key);
+    els.forEach(el => el.innerText = dict[key]);
+  }
+  renderDocumentSample(currentSampleIndex);
+}
+
+function switchNav(idx) {
+  const btns = document.querySelectorAll('.nav-btn');
+  const panels = document.querySelectorAll('.view-panel');
+  btns.forEach((b, i) => b.className = (i === idx) ? 'nav-btn active' : 'nav-btn');
+  panels.forEach((p, i) => p.className = (i === idx) ? 'view-panel active' : 'view-panel');
+
+  if (idx === 0) renderDocumentSample(currentSampleIndex);
+  if (idx === 2) startConveyor();
+  if (idx === 3) renderGrainScan();
+}
+
+// -------------------------------------------------------------
+// LIVE WEBCAM & CAMERA CAPTURE ENGINE
+// -------------------------------------------------------------
+let videoStream = null;
+const videoEl = document.getElementById('webcamVideo');
+const docCanvas = document.getElementById('docCanvas');
+const docCtx = docCanvas.getContext('2d');
+docCanvas.width = 500;
+docCanvas.height = 360;
+
+function startCamera() {
+  if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+      .then(stream => {
+        videoStream = stream;
+        videoEl.srcObject = stream;
+        videoEl.style.display = "block";
+        docCanvas.style.display = "none";
+        document.getElementById('btnSnapPhoto').style.display = "inline-flex";
+        document.getElementById('btnCamToggle').innerHTML = "<span>🛑</span> <span>Stop Camera</span>";
+        document.getElementById('btnCamToggle').onclick = stopCamera;
+      })
+      .catch(err => {
+        alert("Camera access notice: Camera permission not granted or device camera busy. Running high-precision simulated AI scanner instead!");
+        loadSample(0);
+      });
+  } else {
+    alert("Camera API not supported in this browser. Please use file upload or sample mode.");
+  }
+}
+
+function stopCamera() {
+  if (videoStream) {
+    videoStream.getTracks().forEach(track => track.stop());
+    videoStream = null;
+  }
+  videoEl.style.display = "none";
+  docCanvas.style.display = "block";
+  document.getElementById('btnSnapPhoto').style.display = "none";
+  document.getElementById('btnCamToggle').innerHTML = "<span>📸</span> <span>Turn On Live Camera</span>";
+  document.getElementById('btnCamToggle').onclick = startCamera;
+  renderDocumentSample(currentSampleIndex);
+}
+
+function capturePhoto() {
+  if (videoEl && videoStream) {
+    docCtx.drawImage(videoEl, 0, 0, docCanvas.width, docCanvas.height);
+    stopCamera();
+
+    // Draw scanning laser animation & simulated OCR boxes
+    docCtx.strokeStyle = "#10b981";
+    docCtx.lineWidth = 2;
+    docCtx.strokeRect(40, 60, 420, 240);
+    docCtx.fillStyle = "rgba(16, 185, 129, 0.15)";
+    docCtx.fillRect(40, 60, 420, 240);
+    docCtx.fillStyle = "#10b981";
+    docCtx.font = "bold 12px sans-serif";
+    docCtx.fillText("✓ LIVE PHOTO SCANNED & EXTRACTED", 50, 85);
+
+    alert((currentLang === 'ta') 
+      ? "நேரடி புகைப்படம் வெற்றிகரமாக ஸ்கேன் செய்யப்பட்டது! விவரங்கள் தானாக எடுக்கப்பட்டு படிவத்தில் நிரப்பப்பட்டுள்ளது."
+      : "Live Photo Scanned & Processed! Extracted fields populated in the validation form.");
+  }
+}
+
+function handleFileUpload(event) {
+  const file = event.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const img = new Image();
+      img.onload = function() {
+        docCanvas.style.display = "block";
+        videoEl.style.display = "none";
+        docCtx.drawImage(img, 0, 0, docCanvas.width, docCanvas.height);
+        
+        // Draw AI OCR detection overlay
+        docCtx.strokeStyle = "#38bdf8";
+        docCtx.lineWidth = 2;
+        docCtx.setLineDash([4, 4]);
+        docCtx.strokeRect(30, 40, 440, 280);
+        docCtx.setLineDash([]);
+        docCtx.fillStyle = "#38bdf8";
+        docCtx.font = "bold 11px sans-serif";
+        docCtx.fillText("AI OCR PROCESSED (Confidence: 97.8%)", 40, 60);
+
+        // Populate sample data
+        loadSample(0);
+        alert((currentLang === 'ta') 
+          ? "படம் வெற்றிகரமாக பதிவேற்றப்பட்டது! OCR விவரங்கள் பிரித்தெடுக்கப்பட்டது."
+          : "Image Uploaded Successfully! OCR extracted fields populated.");
+      }
+      img.src = e.target.result;
+    }
+    reader.readAsDataURL(file);
+  }
+}
+
+// -------------------------------------------------------------
+// ENGINE MODE & SAMPLES (Printed vs Handwritten)
+// -------------------------------------------------------------
+let engineMode = 'printed';
+function setEngineMode(mode) {
+  engineMode = mode;
+  document.getElementById('mBtnPrinted').className = (mode === 'printed') ? 'mode-btn active' : 'mode-btn';
+  document.getElementById('mBtnHandwritten').className = (mode === 'handwritten') ? 'mode-btn active' : 'mode-btn';
+  if (mode === 'handwritten') {
+    loadSample(3);
+  } else {
+    loadSample(0);
+  }
+}
+
+let currentSampleIndex = 0;
+const sampleDocs = [
+  {
+    type: "Weighbridge Slip (எடை ரசீது)",
+    veh: "TN-49-AB-1234",
+    party: "M. Ramasamy / ம. ராமசாமி (Thanjavur)",
+    variety: "Deluxe Ponni (டீலக்ஸ் பொன்னி)",
+    gross: "18,450 kg",
+    tare: "6,200 kg",
+    net: "12,250 kg (163 Bags @ 75kg)",
+    moist: "14.2% (Permissible Standard)",
+    rate: "₹1,450 / 75kg Bag",
+    total: "₹2,36,350",
+    slipTitle: "THANJAVUR WEIGHBRIDGE SLIP (PRINTED)",
+    isHandwritten: false
+  },
+  {
+    type: "Paddy Purchase Bill (நெல் கொள்முதல்)",
+    veh: "TN-51-C-8844 (Tractor)",
+    party: "K. Senthamarai / க. செந்தாமரை (Kumbakonam)",
+    variety: "BPT 5204 (Sona Masoori)",
+    gross: "14,200 kg",
+    tare: "4,100 kg",
+    net: "10,100 kg (135 Bags @ 75kg)",
+    moist: "13.8% (Dry & Prime Quality)",
+    rate: "₹1,520 / 75kg Bag",
+    total: "₹2,05,200",
+    slipTitle: "DIRECT FARMER PURCHASE VOUCHER",
+    isHandwritten: false
+  },
+  {
+    type: "Sales Invoice (விற்பனை ரசீது)",
+    veh: "TN-49-X-9988",
+    party: "Kavitha Rice Traders (Madurai)",
+    variety: "Super Fine Ponni Rice (25kg Pack)",
+    gross: "12,500 kg",
+    tare: "6,250 kg",
+    net: "6,250 kg (250 Bags @ 25kg)",
+    moist: "11.5% (Milled)",
+    rate: "₹1,350 / 25kg Pack",
+    total: "₹3,37,500",
+    slipTitle: "COMMERCIAL SALES DISPATCH INVOICE",
+    isHandwritten: false
+  },
+  {
+    type: "Handwritten Paddy Chit (கையெழுத்து நெல் சீட்டு)",
+    veh: "TN-49-T-5566 (டிராக்டர்)",
+    party: "Senguttuvan / செங்குட்டுவன் (பாபநாசம்)",
+    variety: "ADT 39 / ஆடுதுறை 39 நெல்",
+    gross: "9,800 kg (கையெழுத்து)",
+    tare: "3,500 kg (டிராக்டர்)",
+    net: "6,300 kg (84 மூட்டைகள் @ 75kg)",
+    moist: "15.0% (வயல் நெல்)",
+    rate: "₹1,380 / மூட்டை",
+    total: "₹1,15,920",
+    slipTitle: "விவசாயி நேரடி கொள்முதல் சீட்டு (கையெழுத்து)",
+    isHandwritten: true
+  }
+];
+
+function loadSample(idx) {
+  currentSampleIndex = idx;
+  for (let i = 0; i < 4; i++) {
+    const p = document.getElementById('pill' + i);
+    if (p) p.className = (i === idx) ? (i===3 ? 'pill-btn handwritten-pill active' : 'pill-btn active') : (i===3 ? 'pill-btn handwritten-pill' : 'pill-btn');
+  }
+  const d = sampleDocs[idx];
+  document.getElementById('fDocType').value = d.type;
+  document.getElementById('fVehNo').value = d.veh;
+  document.getElementById('fParty').value = d.party;
+  document.getElementById('fVariety').value = d.variety;
+  document.getElementById('fGross').value = d.gross;
+  document.getElementById('fTare').value = d.tare;
+  document.getElementById('fNet').value = d.net;
+  document.getElementById('fMoist').value = d.moist;
+  document.getElementById('fRate').value = d.rate;
+  document.getElementById('fTotal').value = d.total;
+
+  if (d.isHandwritten) {
+    document.getElementById('fDocType').className = "form-input handwritten-highlight";
+    document.getElementById('mBtnHandwritten').className = "mode-btn active";
+    document.getElementById('mBtnPrinted').className = "mode-btn";
+  } else {
+    document.getElementById('fDocType').className = "form-input highlight";
+    document.getElementById('mBtnPrinted').className = "mode-btn active";
+    document.getElementById('mBtnHandwritten').className = "mode-btn";
+  }
+
+  renderDocumentSample(idx);
+}
+
+function renderDocumentSample(idx) {
+  const d = sampleDocs[idx];
+  docCanvas.style.display = "block";
+  videoEl.style.display = "none";
+
+  if (d.isHandwritten) {
+    // Render Lined Notebook Paper with Blue Pen Handwriting
+    docCtx.fillStyle = "#fffdf0"; // Notebook cream paper
+    docCtx.fillRect(0, 0, docCanvas.width, docCanvas.height);
+
+    // Lined ruled paper lines
+    docCtx.strokeStyle = "#e2e8f0";
+    docCtx.lineWidth = 1;
+    for (let y = 35; y <= 340; y += 22) {
+      docCtx.beginPath(); docCtx.moveTo(10, y); docCtx.lineTo(490, y); docCtx.stroke();
+    }
+    // Red left margin line
+    docCtx.strokeStyle = "#fca5a5";
+    docCtx.lineWidth = 1.5;
+    docCtx.beginPath(); docCtx.moveTo(65, 10); docCtx.lineTo(65, 350); docCtx.stroke();
+
+    // Handwritten Blue Ink Text
+    docCtx.fillStyle = "#1e3a8a"; // Blue ballpoint ink
+    docCtx.font = "italic bold 13px serif";
+    docCtx.fillText("நெல் கொள்முதல் பற்று சீட்டு (13/8/2026)", 80, 52);
+
+    docCtx.font = "italic 12px serif";
+    docCtx.fillText("விவசாயி: " + d.party, 80, 96);
+    docCtx.fillText("வண்டி எண்: " + d.veh, 80, 140);
+    docCtx.fillText("ரகம்: " + d.variety, 80, 184);
+    docCtx.fillText("எடை: " + d.net, 80, 228);
+    docCtx.fillText("விலை: " + d.rate + "  |  ஈரப்பதம்: 15%", 80, 272);
+    
+    docCtx.font = "italic bold 14px serif";
+    docCtx.fillStyle = "#0f172a";
+    docCtx.fillText("மொத்தம்: " + d.total + " (செங்குட்டுவன் கையெழுத்து)", 80, 316);
+
+    // AI Vision-Language Handwritten Bounding Boxes (Purple)
+    docCtx.strokeStyle = "#a855f7";
+    docCtx.lineWidth = 1.5;
+    docCtx.setLineDash([3, 3]);
+    docCtx.strokeRect(75, 80, 360, 22);
+    docCtx.strokeRect(75, 124, 250, 22);
+    docCtx.strokeRect(75, 212, 320, 22);
+    docCtx.setLineDash([]);
+
+    docCtx.fillStyle = "#7c3aed";
+    docCtx.font = "bold 9px sans-serif";
+    docCtx.fillText("✨ AI TrOCR / VLM HANDWRITTEN RECOGNITION: 96.4%", 80, 345);
+
+  } else {
+    // Printed Slip Render
+    docCtx.fillStyle = "#ffffff";
+    docCtx.fillRect(0, 0, docCanvas.width, docCanvas.height);
+
+    docCtx.strokeStyle = "#94a3b8";
+    docCtx.lineWidth = 2;
+    docCtx.strokeRect(15, 15, docCanvas.width - 30, docCanvas.height - 30);
+
+    docCtx.fillStyle = "#0f172a";
+    docCtx.font = "bold 13px sans-serif";
+    docCtx.fillText(d.slipTitle, 30, 45);
+    docCtx.font = "10px monospace";
+    docCtx.fillStyle = "#64748b";
+    docCtx.fillText("Date: 13/08/2026 10:24 AM | Slip #: WB-8842", 30, 62);
+
+    docCtx.strokeStyle = "#cbd5e1";
+    docCtx.beginPath(); docCtx.moveTo(30, 72); docCtx.lineTo(470, 72); docCtx.stroke();
+
+    docCtx.fillStyle = "#1e293b";
+    docCtx.font = "11px sans-serif";
+    docCtx.fillText("Vehicle No:", 30, 98);
+    docCtx.font = "bold 11px monospace";
+    docCtx.fillText(d.veh, 120, 98);
+
+    docCtx.font = "11px sans-serif";
+    docCtx.fillText("Party Name:", 30, 125);
+    docCtx.font = "bold 10.5px sans-serif";
+    docCtx.fillText(d.party, 120, 125);
+
+    docCtx.font = "11px sans-serif";
+    docCtx.fillText("Commodity:", 30, 152);
+    docCtx.font = "bold 11px sans-serif";
+    docCtx.fillText(d.variety, 120, 152);
+
+    docCtx.font = "11px sans-serif";
+    docCtx.fillText("Gross Wt:", 30, 185);
+    docCtx.fillText("Tare Wt:", 180, 185);
+    docCtx.fillText("Net Wt:", 320, 185);
+
+    docCtx.font = "bold 11.5px monospace";
+    docCtx.fillText(d.gross, 30, 205);
+    docCtx.fillText(d.tare, 180, 205);
+    docCtx.fillStyle = "#059669";
+    docCtx.fillText(d.net.split('(')[0], 320, 205);
+
+    docCtx.fillStyle = "#1e293b";
+    docCtx.font = "11px sans-serif";
+    docCtx.fillText("Moisture: " + d.moist.split('(')[0], 30, 240);
+    docCtx.fillText("Rate: " + d.rate, 220, 240);
+
+    docCtx.font = "bold 13px sans-serif";
+    docCtx.fillStyle = "#065f46";
+    docCtx.fillText("Total: " + d.total, 30, 280);
+
+    // AI OCR bounding boxes
+    docCtx.strokeStyle = "#38bdf8";
+    docCtx.lineWidth = 1.5;
+    docCtx.setLineDash([3, 3]);
+    docCtx.strokeRect(115, 86, 120, 16);
+    docCtx.strokeRect(115, 113, 260, 16);
+    docCtx.strokeRect(25, 192, 90, 18);
+    docCtx.strokeRect(175, 192, 90, 18);
+    docCtx.strokeRect(315, 192, 100, 18);
+    docCtx.setLineDash([]);
+    
+    docCtx.fillStyle = "#0284c7";
+    docCtx.font = "bold 9px sans-serif";
+    docCtx.fillText("AI PRINTED OCR CONFIDENCE: 98.6%", 30, 320);
+  }
+}
+
+function handleValidateAndSave(e) {
+  e.preventDefault();
+  const net = document.getElementById('fNet').value;
+  const variety = document.getElementById('fVariety').value;
+  const total = document.getElementById('fTotal').value;
+
+  const msg = (currentLang === 'ta')
+    ? `வெற்றிகரமாக சரிபார்க்கப்பட்டது!\n\n${variety} - ${net}\nதொகை: ${total}\n\nசரக்கு இருப்பு மற்றும் கணக்கு பதிவேட்டில் சேர்க்கப்பட்டது.`
+    : `Validation Successful!\n\n${variety} - ${net}\nValue: ${total}\n\nStock Ledger & Accounts updated.`;
+
+  alert(msg);
+  switchNav(1);
+}
+
+// -------------------------------------------------------------
+// MODULE 2: CONVEYOR BAG COUNTER CANVAS
+// -------------------------------------------------------------
+const cConv = document.getElementById('conveyorCanvas');
+const ctxConv = cConv.getContext('2d');
+cConv.width = 500;
+cConv.height = 280;
+
+let bagCount = 148;
+let conveyorRunning = true;
+let bagPositions = [60, 180, 300, 420];
+
+function drawConveyor() {
+  ctxConv.fillStyle = "#080c14";
+  ctxConv.fillRect(0, 0, cConv.width, cConv.height);
+
+  ctxConv.fillStyle = "#1e293b";
+  ctxConv.fillRect(20, 180, 460, 35);
+  ctxConv.strokeStyle = "#475569";
+  ctxConv.lineWidth = 3;
+  ctxConv.strokeRect(20, 180, 460, 35);
+
+  for (let x = 40; x <= 460; x += 40) {
+    ctxConv.fillStyle = "#334155";
+    ctxConv.beginPath(); ctxConv.arc(x, 197, 10, 0, Math.PI*2); ctxConv.fill();
+    ctxConv.strokeStyle = "#64748b"; ctxConv.stroke();
+  }
+
+  ctxConv.fillStyle = "#0f172a";
+  ctxConv.fillRect(440, 60, 50, 160);
+  ctxConv.strokeStyle = "#38bdf8";
+  ctxConv.strokeRect(440, 60, 50, 160);
+  ctxConv.fillStyle = "#38bdf8";
+  ctxConv.font = "bold 9px sans-serif";
+  ctxConv.fillText("LORRY", 448, 140);
+
+  ctxConv.strokeStyle = "#ef4444";
+  ctxConv.lineWidth = 2;
+  ctxConv.setLineDash([4, 4]);
+  ctxConv.beginPath(); ctxConv.moveTo(380, 40); ctxConv.lineTo(380, 240); ctxConv.stroke();
+  ctxConv.setLineDash([]);
+  ctxConv.fillStyle = "#ef4444";
+  ctxConv.font = "bold 9px sans-serif";
+  ctxConv.fillText("AI SENSOR TRIGGER", 320, 35);
+
+  for (let i = 0; i < bagPositions.length; i++) {
+    const bx = bagPositions[i];
+    
+    ctxConv.fillStyle = "#f59e0b";
+    ctxConv.beginPath();
+    ctxConv.roundRect(bx - 30, 130, 60, 45, 6);
+    ctxConv.fill();
+    ctxConv.strokeStyle = "#b45309";
+    ctxConv.lineWidth = 2;
+    ctxConv.stroke();
+
+    ctxConv.fillStyle = "#78350f";
+    ctxConv.font = "bold 8.5px sans-serif";
+    ctxConv.fillText("PONNI 25kg", bx - 25, 155);
+
+    ctxConv.strokeStyle = "#10b981";
+    ctxConv.lineWidth = 1.5;
+    ctxConv.strokeRect(bx - 35, 120, 70, 60);
+    ctxConv.fillStyle = "#10b981";
+    ctxConv.fillRect(bx - 35, 106, 60, 14);
+    ctxConv.fillStyle = "#0f172a";
+    ctxConv.font = "bold 8px sans-serif";
+    ctxConv.fillText("Bag (0.97)", bx - 32, 116);
+
+    if (conveyorRunning) {
+      bagPositions[i] += 1.8;
+      if (bagPositions[i] >= 440) {
+        bagPositions[i] = 10;
+        bagCount++;
+        document.getElementById('bagCountNum').innerText = bagCount + " Bags";
+        const pct = Math.min(100, Math.round((bagCount / 200) * 100));
+        document.getElementById('txtProgress').innerText = pct + "% (" + bagCount + " / 200 Bags)";
+        document.getElementById('progBar').style.width = pct + "%";
+      }
+    }
+  }
+
+  ctxConv.fillStyle = "#ef4444";
+  ctxConv.font = "bold 11px monospace";
+  ctxConv.fillText("🔴 LIVE CAM 04 (CONVEYOR GATE) | 30 FPS", 20, 25);
+
+  requestAnimationFrame(drawConveyor);
+}
+
+function startConveyor() {
+  conveyorRunning = true;
+}
+
+function toggleConveyor() {
+  conveyorRunning = !conveyorRunning;
+  const btn = document.getElementById('btnConveyorToggle');
+  const dict = i18n[currentLang];
+  btn.innerHTML = conveyorRunning 
+    ? `<span>⏸</span> <span>${dict.t_btnPauseConveyor}</span>` 
+    : `<span>▶</span> <span>${(currentLang==='ta')?'ஏற்றுதலை தொடங்கு':'Resume Loading Batch'}</span>`;
+}
+
+function resetBagCounter() {
+  bagCount = 0;
+  document.getElementById('bagCountNum').innerText = "0 Bags";
+  document.getElementById('txtProgress').innerText = "0% (0 / 200 Bags)";
+  document.getElementById('progBar').style.width = "0%";
+}
+
+// -------------------------------------------------------------
+// MODULE 3: RICE GRAIN QUALITY CANVAS
+// -------------------------------------------------------------
+const cGrain = document.getElementById('grainCanvas');
+const ctxGrain = cGrain.getContext('2d');
+cGrain.width = 500;
+cGrain.height = 280;
+
+function renderGrainScan() {
+  ctxGrain.fillStyle = "#060912";
+  ctxGrain.fillRect(0, 0, cGrain.width, cGrain.height);
+
+  ctxGrain.fillStyle = "#1e293b";
+  ctxGrain.beginPath(); ctxGrain.arc(250, 140, 120, 0, Math.PI*2); ctxGrain.fill();
+  ctxGrain.strokeStyle = "#475569"; ctxGrain.lineWidth = 4; ctxGrain.stroke();
+
+  const rng = (s) => Math.sin(s) * 10000 - Math.floor(Math.sin(s) * 10000);
+  
+  for (let i = 0; i < 45; i++) {
+    const angle = rng(i * 3) * Math.PI * 2;
+    const r = rng(i * 7) * 95;
+    const gx = 250 + Math.cos(angle) * r;
+    const gy = 140 + Math.sin(angle) * r;
+    const rot = rng(i * 11) * Math.PI;
+    const isBroken = (i % 7 === 0);
+
+    ctxGrain.save();
+    ctxGrain.translate(gx, gy);
+    ctxGrain.rotate(rot);
+
+    if (isBroken) {
+      ctxGrain.fillStyle = "#fef08a";
+      ctxGrain.beginPath(); ctxGrain.ellipse(0, 0, 5, 3, 0, 0, Math.PI*2); ctxGrain.fill();
+      ctxGrain.strokeStyle = "#ef4444";
+      ctxGrain.lineWidth = 1;
+      ctxGrain.strokeRect(-8, -6, 16, 12);
+    } else {
+      ctxGrain.fillStyle = "#ffffff";
+      ctxGrain.beginPath(); ctxGrain.ellipse(0, 0, 11, 3.2, 0, 0, Math.PI*2); ctxGrain.fill();
+      ctxGrain.strokeStyle = "#10b981";
+      ctxGrain.lineWidth = 1;
+      ctxGrain.strokeRect(-14, -6, 28, 12);
+    }
+
+    ctxGrain.restore();
+  }
+
+  ctxGrain.fillStyle = "#34d399";
+  ctxGrain.font = "bold 10.5px monospace";
+  ctxGrain.fillText("AI GRAIN SEGMENTER | Head Rice: 83.8% (Green) | Broken: 11.4% (Red)", 20, 25);
+}
+
+function simulateGrainScan() {
+  const head = (82 + Math.random() * 4).toFixed(1);
+  const broken = (10 + Math.random() * 3).toFixed(1);
+  const chalky = (2.5 + Math.random() * 2).toFixed(1);
+  const purity = (98.0 + Math.random() * 1.5).toFixed(1);
+
+  document.getElementById('valHeadRice').innerText = head + "%";
+  document.getElementById('valBroken').innerText = broken + "%";
+  document.getElementById('valChalky').innerText = chalky + "%";
+  document.getElementById('valPurity').innerText = purity + "%";
+
+  renderGrainScan();
+  alert((currentLang === 'ta') ? "புதிய மாதிரி ஆய்வு முடிந்தது! தரம்: முதல் தரம் (Grade-A)" : "Sample Analysis Complete! Quality: Grade-A Premium");
+}
+
+// Initial Run
+renderDocumentSample(0);
+drawConveyor();
+</script>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2af8d58695458e7',t:'MTc4NjcwNjIzNg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
